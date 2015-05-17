@@ -10,10 +10,20 @@ app.jinja_env.filters['basename'] = os.path.basename
 
 ss = sandschreiber.AsyncSandschreiber(settings.device, 115200)
 
+def get_gcodes(directory):
+    gcodes = []
+    for filename in os.listdir(directory):
+        filename = os.path.join(directory, filename)
+
+        if os.path.isfile(filename) and filename[-5:] == 'gcode':
+            gcodes.append(filename)
+
+    return gcodes
+
 @app.route("/")
 def index():
     return render_template('index.jinja2',
-        files=glob.glob(settings.gcode_directory + u'/*.gcode'),
+        files=get_gcodes(settings.gcode_directory),
         playlist=ss.playlist,
         connected=ss.is_connected(),
         printing=ss.printing
