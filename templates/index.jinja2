@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Sandschreiber</title>
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/main.css" rel="stylesheet">
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="page-header">
+        <h1><img src="static/img/sandschreiber-logo.png"></h1>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <h2>G-code hochladen</h2>
+          <form action="/upload" method="POST" enctype="multipart/form-data">
+
+            <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-btn">
+                  <span class="btn btn-primary btn-file">
+                    Datei auswählen&hellip; <input type="file" name="file" id="gcodefile">
+                  </span>
+                </span>
+                <input type="text" class="form-control" data-file-select="gcodefile" readonly>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">Hochladen</button>
+          </form>
+        </div>
+
+        <div class="col-md-6">
+          <h2>Steuerung</h2>
+
+          <div class="form-group">
+            <input type="text" class="form-control" value="/dev/sandschreiber" readonly>
+          </div>
+
+          <div class="form-group">
+            {% if connected: %}
+              <button type="button" class="btn btn-danger btn-ctrl-disconnect">Verbindung trennen</button>
+            {% else %}
+              <button type="button" class="btn btn-success btn-ctrl-connect">Verbinden</button>
+            {% endif %}
+            <button type="button" class="btn btn-warning btn-ctrl-emergency">Not-Stop!11einself</button>
+          </div>
+        </div>
+    </div>
+   
+    <br><br>
+
+    <div class="row">
+      <div class="col-md-6">
+        <h2>Playlist</h2>
+        <table class="table table-condensed table-striped playlist">
+          <thead>
+            <tr>
+              <th>Datei</th>
+              <th width="100">Status</th>
+              <th width="120">Funktion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in playlist %}
+                <tr class="playlist-item" data-index="{{ loop.index0 }}">
+                  <td>{{ entry.filename | basename }}</td>
+                  <td class="playlist-item-status">{{ entry.status }}</td>
+                  <td><button type="button" class="btn btn-xs btn-danger btn-playlist-remove">Entfernen</button></td>
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if printing %}
+          <button type="button" class="btn btn-success btn-ctrl-stop-print">Stoppen</button>
+        {% else %}
+          <button type="button" class="btn btn-success btn-ctrl-start-print">Abspielen</button>
+          <button type="button" class="btn btn-danger btn-playlist-clear">Leeren</button>
+        {% endif %}
+
+        <h2>Text-Helper</h2>
+        <div class="text-helper">
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="backspace e.V.">
+          </div>
+
+          <div class="search-result hidden">
+            <table class="table table-condensed table-striped">
+              <thead>
+                <tr>
+                  <th>Buchstabe</th>
+                  <th>GCode</th>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+
+            <button type="button" class="btn btn-info btn-texthelper-add-playlist">Zur Playlist hinzufügen</button>
+
+          </div>
+
+        </div>
+        
+      </div>
+
+      <div class="col-md-6">
+        <h2>Verfügbare G-Codes</h2>
+        <table class="table table-condensed table-striped available-gcodes">
+          <tr>
+            <th>Dateiname</th>
+            <th width="120">Funktion</th>
+          </tr>
+          {% for file in files | sort %}
+            <tr data-letter="{{ file | basename | replace('.gcode', '') }}">
+              <td class="filename">{{ file | basename }}</td>
+              <td>
+                <button type="button" data-filename="{{ file | basename }}" class="btn btn-info btn-add-playlist btn-xs">Zur Playlist hinzufügen</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+
+
+    <script src="static/js/jquery-1.11.2.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+    <script>
+      $(function () {
+
+          function reload() {
+              window.location.href = '/';
+          }
+
+          $('.btn-file :file').change(function () {
+            var $this = $(this);
+            var file = $this[0].files[0];
+
+            var id = $(this).attr('id');
+            $('input[data-file-select="' + id + '"]').val(file.name);
+          });
+
+
+          $('.btn-add-playlist').click(function() {
+              $.post('/playlist', { filename: $(this).data('filename') }, reload);
+          });
+
+          $('.btn-playlist-remove').click(function() {
+              $.ajax({
+                  url: '/playlist',
+                  type: 'DELETE',
+                  data: { index: $(this).parent().parent().data('index') },
+                  success: reload
+              });
+          });
+
+          $('.btn-playlist-clear').click(function() {
+              $.ajax({
+                  url: '/playlist',
+                  type: 'DELETE',
+                  success: reload
+              });
+          })
+
+          $('.btn-ctrl-connect').click(function() {
+              $.post('/connect', reload);
+          });
+
+          $('.btn-ctrl-disconnect').click(function() {
+              $.post('/disconnect', reload);
+          });
+
+          $('.btn-ctrl-emergency').click(function() {
+              $.post('/emergencyStop', reload);
+          });
+
+          $('.btn-ctrl-start-print').click(function() {
+              $.post('/print', reload);
+          });
+
+          $('.btn-ctrl-stop-print').click(function(){
+              $.ajax({
+                  url: '/print',
+                  type: 'DELETE',
+                  success: reload
+              });
+          });
+
+
+          $('.btn-ctrl-stop-print').each(function() {
+
+              function refreshItems() {
+                  $.get('/playlist', function(result) {
+
+                    result.playlist.forEach(function(entry, idx) {
+                        $('.playlist-item[data-index=' + idx + '] .playlist-item-status').text(entry.status);
+                    });
+
+                    setTimeout(refreshItems, 2000);
+                  });
+              }
+
+              refreshItems();
+          });
+
+          var $textHelper = $('.text-helper');
+          var $availableGcodes = $('.available-gcodes');
+
+          var $textHelperTableRow = $('<tr>' +
+              '<td class="letter"></td>' + 
+              '<td class="gcode-file" width="200"></td>' +
+            '</tr>');
+
+          var map = {
+            '.': 'punkt',
+            '*': 'stern',
+            ' ': 'space'
+          };
+
+          
+
+          $('input', $textHelper).on('keyup', function() {
+
+            var $tmpTableBody = $('<tbody />');
+            var input = $(this).val();
+            var letters = input.split('');
+
+            letters.forEach(function(letter) {
+              var originLetter = letter;
+
+              if(map[letter]) {
+                letter = map[letter];
+              }
+
+              var $search = $('[data-letter="' + letter + '"]', $availableGcodes);
+              if($search.length == 0 && letter.toUpperCase() == letter) {
+                letter = letter.toLowerCase() + 'g';
+              }
+
+              $search = $('[data-letter="' + letter + '"]', $availableGcodes);
+
+              var $row = $textHelperTableRow.clone();
+              $('.letter', $row).text(originLetter);
+
+              if($search.length > 0) {
+                $('.gcode-file', $row).text($('.filename', $search).text());
+              } else {
+                $('.gcode-file', $row)
+                  .text('Nichts gefunden')
+                  .addClass('text-danger');
+              }
+
+              $tmpTableBody.append($row);
+            });
+
+            var $searchResult = $('.search-result', $textHelper);
+            if($('tr', $tmpTableBody).length > 0) {
+              $searchResult.removeClass('hidden');
+            } else {
+              $searchResult.addClass('hidden');
+            }
+
+
+            $('tbody', $textHelper).replaceWith($tmpTableBody);
+
+          });
+
+          $('.btn-texthelper-add-playlist', $textHelper).click(function() {
+
+            var filenames = [];
+            $('.gcode-file', $textHelper).each(function() {
+              filenames.push($(this).text());
+            });
+
+            $.post('/playlist', { filename: filenames }, reload);
+
+          });
+      });
+    </script>
+  </body>
+</html>
