@@ -8,14 +8,12 @@ from flask import Flask, render_template, request, redirect, jsonify
 app = Flask(__name__)
 app.jinja_env.filters['basename'] = os.path.basename
 
-GCODE_DIRECTORY='gcodes'
-
 ss = sandschreiber.AsyncSandschreiber(settings.device, 115200)
 
 @app.route("/")
 def index():
     return render_template('index.jinja2',
-        files=glob.glob(GCODE_DIRECTORY + u'/*.gcode'),
+        files=glob.glob(settings.gcode_directory + u'/*.gcode'),
         playlist=ss.playlist,
         connected=ss.is_connected(),
         printing=ss.printing
@@ -47,7 +45,7 @@ def upload_gcode():
     upload_file = request.files['file']
     filename = secure_filename(upload_file.filename)
 
-    upload_file.save(os.path.join(GCODE_DIRECTORY, filename))
+    upload_file.save(os.path.join(settings.gcode_directory, filename))
 
     return redirect('/', code=301)
 
@@ -78,7 +76,7 @@ def playlist_add():
         filenames = request.form.getlist('filename[]')
 
     for filename in filenames:
-        pl_item = sandschreiber.PlaylistItem(os.path.join(GCODE_DIRECTORY, filename))
+        pl_item = sandschreiber.PlaylistItem(os.path.join(settings.gcode_directory, filename))
         ss.playlist.add(pl_item)
 
     return 'OK'
