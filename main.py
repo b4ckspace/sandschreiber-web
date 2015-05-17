@@ -1,5 +1,6 @@
 import os
 import glob
+import settings
 import sandschreiber
 from werkzeug import secure_filename
 from flask import Flask, render_template, request, redirect, jsonify
@@ -9,7 +10,7 @@ app.jinja_env.filters['basename'] = os.path.basename
 
 GCODE_DIRECTORY='gcodes'
 
-ss = sandschreiber.AsyncSandschreiber('/dev/ttyUSB0', 115200)
+ss = sandschreiber.AsyncSandschreiber(settings.device, 115200)
 
 @app.route("/")
 def index():
@@ -93,5 +94,4 @@ def playlist_remove():
     return 'OK'
 
 if __name__ == "__main__":
-    app.debug = True
-    app.run(host='0.0.0.0')
+    app.run(host=settings.listen, port=settings.port)
