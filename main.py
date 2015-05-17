@@ -22,13 +22,19 @@ def index():
 
 @app.route('/connect', methods=["POST"])
 def connect():
-    ss.connect()
-    return 'OK'
+    try:
+        ss.connect()
+        return 'OK'
+    except:
+        return 'FAIL', 500
 
 @app.route('/disconnect', methods=["POST"])
 def disconnect():
-    ss.disconnect()
-    return 'OK'
+    try:
+        ss.disconnect()
+        return 'OK'
+    except:
+        return 'FAIL', 500
 
 @app.route('/emergencyStop', methods=["POST"])
 def emergency_stop():
