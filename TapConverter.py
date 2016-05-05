@@ -1,6 +1,6 @@
 import re
 
-class TabConverter(object):
+class TapConverter(object):
 
     def __init__(self, source):
         self.source = source
@@ -8,7 +8,7 @@ class TabConverter(object):
     @staticmethod
     def from_file(self, filename):
         content = open(filename, 'r').read()
-        return TabConverter(content)
+        return TapConverter(content)
 
     def replace_code(self, input, search, replace):
         return input.replace(search, replace)
