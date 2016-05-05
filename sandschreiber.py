@@ -87,11 +87,11 @@ class AsyncSandschreiber(threading.Thread):
         if not self.is_connected():
             self.serial.open()
 
-        time.sleep(1)
-        self.serial.write("\r\n\r\n")
+#        time.sleep(1)
+#        self.serial.write("\r\n\r\n")
         time.sleep(2)
 
-        self.serial.write("$H\n")
+        self.write("$H\n")
 
     def disconnect(self):
         if self.serial:
@@ -108,8 +108,9 @@ class AsyncSandschreiber(threading.Thread):
         if not self.is_connected():
             return False
 
-        self.serial.write("$1=255\n")
-        self.reset_stepper()
+        self.write_blocking("$X\n")
+        self.write_blocking("$1=255\n")
+        self.write_blocking("G90\n")
 
         self.printing = True
 
@@ -118,16 +119,25 @@ class AsyncSandschreiber(threading.Thread):
         if not self.is_connected():
             return False
 
-        self.serial.write("\x18\n")
-        self.serial.write("$1=25\n")
+        self.write("\x18\n")
+        self.write("$1=25\n")
         self.reset_stepper()
 
         self.printing = False
 
     def reset_stepper(self):
-        self.serial.write("$X\n")
-        self.serial.write("G91\n")
-        self.serial.write("G1 Y1 F1000\n")
+        self.write_blocking("$X\n")
+        self.write_blocking("G90\n")
+        self.write_blocking("G1 Y1 F1000\n")
+
+    def write(self, cmd):
+        print "W:", cmd
+        self.serial.write(cmd)
+
+    def read(self, bytes):
+        result = self.serial.read(bytes)
+        print "R:", result
+        return result
 
     def is_connected(self):
         try:
@@ -139,9 +149,13 @@ class AsyncSandschreiber(threading.Thread):
 
         msg = ""
         while True:
-            msg += self.serial.read(1)
+            msg += self.read(1)
             if "ok" in msg:
                 break
+
+    def write_blocking(self, cmd):
+        self.write(cmd)
+        self.wait_for_ok()
 
     def wait_for_printing_enabled(self):
         while not self.printing or not self.is_connected():
@@ -158,18 +172,12 @@ class AsyncSandschreiber(threading.Thread):
                 item.printing()
 
                 f = open(item.filename, 'r')
-
                 for line in f.readlines():
-
-                    self.wait_for_printing_enabled()
-                    print "Writing line...", line
-                    self.serial.write(line)
-                    print "Done... waiting"
-                    self.wait_for_ok()
+                    self.write_blocking(line)
 
                 print "Item done"
                 item.done()
 
-            self.stop_print()
+            self.printing = False
             time.sleep(1)
 
