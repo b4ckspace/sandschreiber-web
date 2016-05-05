@@ -58,7 +58,7 @@ def upload_gcode():
 
     if filename.endswith(".tap"):
         filename = re.sub(r'tap$', 'gcode', filename)
-        converter = TabConverter(upload_file.read())
+        converter = TapConverter(upload_file.read())
         open(os.path.join(settings.gcode_directory, filename), 'w+').write(converter.get_gcode())
 
     else:
