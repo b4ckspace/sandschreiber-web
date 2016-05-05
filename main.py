@@ -1,5 +1,6 @@
 import os
-import glob
+import re
+from TabConverter import TabConverter
 import settings
 import sandschreiber
 from werkzeug import secure_filename
@@ -55,7 +56,13 @@ def upload_gcode():
     upload_file = request.files['file']
     filename = secure_filename(upload_file.filename)
 
-    upload_file.save(os.path.join(settings.gcode_directory, filename))
+    if filename.endswith(".tap"):
+        filename = re.sub(r'tap$', 'gcode', filename)
+        converter = TabConverter(upload_file.read())
+        open(os.path.join(settings.gcode_directory, filename), 'w+').write(converter.get_gcode())
+
+    else:
+        upload_file.save(os.path.join(settings.gcode_directory, filename))
 
     return redirect('/', code=301)
 
