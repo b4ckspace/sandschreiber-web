@@ -66,6 +66,26 @@ def upload_gcode():
 
     return redirect('/', code=301)
 
+
+@app.route('/upload', methods=["DELETE"])
+def upload_delete():
+    filename = secure_filename(request.form.get('filename'))
+    full_filename = os.path.join(settings.gcode_directory, filename)
+
+    print full_filename
+
+    for item in ss.playlist:
+        print item.filename, filename
+        if item.filename == full_filename:
+            return 'File is in use', 400
+
+    if not os.path.exists(full_filename):
+        return 'Filename not found', 404
+
+    os.remove(full_filename)
+    return 'OK'
+
+
 @app.route('/print', methods=["POST"])
 def start_print():
     ss.start_print()

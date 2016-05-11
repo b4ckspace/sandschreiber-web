@@ -115,13 +115,14 @@
         <table class="table table-condensed table-striped available-gcodes">
           <tr>
             <th>Dateiname</th>
-            <th width="120">Funktion</th>
+            <th width="240">Funktion</th>
           </tr>
           {% for file in files | sort %}
             <tr data-letter="{{ file | basename | replace('.gcode', '') }}">
               <td class="filename">{{ file | basename }}</td>
               <td>
                 <button type="button" data-filename="{{ file | basename }}" class="btn btn-info btn-add-playlist btn-xs">Zur Playlist hinzufügen</button>
+                <button type="button" data-filename="{{ file | basename }}" class="btn btn-danger btn-delete-file btn-xs">löschen</button>
               </td>
             </tr>
           {% endfor %}
@@ -140,6 +141,10 @@
               window.location.href = '/';
           }
 
+          function notify(xhr) {
+              alert(xhr.responseText);
+          }
+
           $('.btn-file :file').change(function () {
             var $this = $(this);
             var file = $this[0].files[0];
@@ -151,6 +156,16 @@
 
           $('.btn-add-playlist').click(function() {
               $.post('/playlist', { filename: $(this).data('filename') }, reload);
+          });
+
+          $('.btn-delete-file').click(function() {
+              $.ajax({
+                  url: '/upload',
+                  type: 'DELETE',
+                  data: { filename: $(this).data('filename') },
+                  success: reload,
+                  error: notify
+              });
           });
 
           $('.btn-playlist-remove').click(function() {
