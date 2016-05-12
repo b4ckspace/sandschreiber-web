@@ -143,4 +143,4 @@ def playlist_remove():
     return 'OK'
 
 if __name__ == "__main__":
-    app.run(host=settings.listen, port=settings.port, debug=True)
+    app.run(host=settings.listen, port=settings.port)
