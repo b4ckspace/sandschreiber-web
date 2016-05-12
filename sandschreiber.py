@@ -122,17 +122,17 @@ class AsyncSandschreiber(threading.Thread):
 
     def home(self):
         self.unlock_grlb()
-        self.write("$H\n")
+        self.write_blocking("$H\n")
 
     def forward(self):
         self.unlock_grlb()
-        self.write("G91\n")
-        self.write("G1 X50 F5000\n")
+        self.write_blocking("G91\n")
+        self.write_blocking("G1 X50 F5000\n")
 
     def backward(self):
         self.unlock_grlb()
-        self.write("G91\n")
-        self.write("G1 X-50 F5000\n")
+        self.write_blocking("G91\n")
+        self.write_blocking("G1 X-50 F5000\n")
 
     def unlock_grlb(self):
         self.write_blocking("$X\n")
