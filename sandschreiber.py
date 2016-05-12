@@ -97,7 +97,7 @@ class AsyncSandschreiber(threading.Thread):
 #        self.serial.write("\r\n\r\n")
         time.sleep(2)
 
-        self.write("$H\n")
+        self.home()
 
     def disconnect(self):
         if self.serial:
@@ -114,11 +114,28 @@ class AsyncSandschreiber(threading.Thread):
         if not self.is_connected():
             return False
 
-        self.write_blocking("$X\n")
+        self.unlock_grlb()
         self.write_blocking("$1=255\n")
         self.write_blocking("G90\n")
 
         self.printing = True
+
+    def home(self):
+        self.unlock_grlb()
+        self.write("$H\n")
+
+    def forward(self):
+        self.unlock_grlb()
+        self.write("G91\n")
+        self.write("G1 X50 F5000\n")
+
+    def backward(self):
+        self.unlock_grlb()
+        self.write("G91\n")
+        self.write("G1 X-50 F5000\n")
+
+    def unlock_grlb(self):
+        self.write_blocking("$X\n")
 
     def stop_print(self):
 
@@ -127,7 +144,6 @@ class AsyncSandschreiber(threading.Thread):
 
         self.write("\x18\n")
         self.write("$1=25\n")
-        self.reset_stepper()
 
         self.printing = False
 

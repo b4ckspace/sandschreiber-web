@@ -92,6 +92,20 @@ def start_print():
 
     return 'OK'
 
+@app.route('/control', methods=["POST"])
+def control():
+    command = request.form.get('command')
+    if command == 'forward':
+        ss.forward()
+    elif command == 'backward':
+        ss.backward()
+    elif command == 'home':
+        ss.home()
+    else:
+        return 'Unknown command', 400
+
+    return 'OK'
+
 @app.route('/print', methods=["DELETE"])
 def stop_print():
     ss.stop_print()
@@ -129,4 +143,4 @@ def playlist_remove():
     return 'OK'
 
 if __name__ == "__main__":
-    app.run(host=settings.listen, port=settings.port)
+    app.run(host=settings.listen, port=settings.port, debug=True)

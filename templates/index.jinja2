@@ -51,6 +51,12 @@
               <button type="button" class="btn btn-success btn-ctrl-connect">Verbinden</button>
             {% endif %}
             <button type="button" class="btn btn-warning btn-ctrl-emergency">Not-Stop!11einself</button>
+
+              {% if not connected: %}
+                  <button type="button" class="btn btn-info btn-ctrl" data-command="forward">Vorwärts</button>
+                  <button type="button" class="btn btn-info btn-ctrl" data-command="backward">Rückwärts</button>
+                  <button type="button" class="btn btn-info btn-ctrl" data-command="home">Home</button>
+              {% endif %}
           </div>
         </div>
     </div>
@@ -183,7 +189,20 @@
                   type: 'DELETE',
                   success: reload
               });
-          })
+          });
+
+          $('.btn-ctrl').click(function() {
+              var command = $(this).data('command');
+              var $this = $(this);
+
+              $this.removeClass('btn-info').addClass('btn-primary');
+
+              $.post('/control', { command: command }, function() {
+                    setTimeout(function() {
+                        $this.removeClass('btn-primary').addClass('btn-info');
+                    }, 1000);
+              });
+          });
 
           $('.btn-ctrl-connect').click(function() {
               $.post('/connect', reload);
