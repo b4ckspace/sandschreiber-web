@@ -51,6 +51,12 @@ class Playlist(object):
         self.idx = 0
         return self
 
+    def __len__(self):
+        return len(self.playlist)
+
+    def __getitem__(self, index):
+        return self.playlist[index]
+
     def next(self):
 
         if self.idx >= len(self.playlist):
@@ -167,8 +173,9 @@ class AsyncSandschreiber(threading.Thread):
 
             self.wait_for_printing_enabled()
 
-            for item in self.playlist:
-
+            i = 0
+            while i < len(self.playlist):
+                item = self.playlist[i]
                 item.printing()
 
                 f = open(item.filename, 'r')
@@ -177,6 +184,8 @@ class AsyncSandschreiber(threading.Thread):
 
                 print "Item done"
                 item.done()
+
+                i += 1
 
             self.printing = False
             time.sleep(1)
