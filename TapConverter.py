@@ -39,5 +39,6 @@ class TapConverter(object):
         input = re.sub(r'G01\s+Z-20\.000', 'G1 X%.3f F2000' % (largest_x + 30,), input, flags=re.MULTILINE)
 
         input = self.replace_code(input, "Z-6.000", "F2000")
+        input = re.sub(r'\r\n', '\n', input, flags=re.MULTILINE)
 
         return '\n'.join(input.split('\n')[5:])
