@@ -52,10 +52,20 @@
             {% endif %}
             <button type="button" class="btn btn-warning btn-ctrl-emergency">Not-Stop!11einself</button>
 
-              {% if connected: %}
+              {% if not connected: %}
                   <button type="button" class="btn btn-info btn-ctrl" data-command="forward">Vorwärts</button>
                   <button type="button" class="btn btn-info btn-ctrl" data-command="backward">Rückwärts</button>
                   <button type="button" class="btn btn-info btn-ctrl" data-command="home">Home</button>
+
+                  {% if sandschreiber.paused %}
+                      <button type="button" class="btn btn-danger btn-ctrl" data-command="play" data-reload="true">
+                              <span class="glyphicon glyphicon-play"></span>
+                      </button>
+                  {% else %}
+                      <button type="button" class="btn btn-info btn-ctrl" data-command="pause" data-reload="true">
+                          <span class="glyphicon glyphicon-pause"></span>
+                      </button>
+                  {% endif %}
               {% endif %}
           </div>
         </div>
@@ -193,14 +203,20 @@
 
           $('.btn-ctrl').click(function() {
               var command = $(this).data('command');
+              var doReload = $(this).data('reload');
+
               var $this = $(this);
 
               $this.removeClass('btn-info').addClass('btn-primary');
 
               $.post('/control', { command: command }, function() {
-                    setTimeout(function() {
-                        $this.removeClass('btn-primary').addClass('btn-info');
-                    }, 1000);
+                  if(doReload) {
+                      return reload();
+                  }
+
+                  setTimeout(function() {
+                     $this.removeClass('btn-primary').addClass('btn-info');
+                  }, 1000);
               });
           });
 

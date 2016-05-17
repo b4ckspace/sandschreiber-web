@@ -76,6 +76,7 @@ class AsyncSandschreiber(threading.Thread):
 
         self.playlist = Playlist()
         self.printing = False
+        self.paused = False
 
         self.device = device
         self.baud = baud
@@ -184,6 +185,12 @@ class AsyncSandschreiber(threading.Thread):
         while not self.printing or not self.is_connected():
             time.sleep(1)
 
+    def pause(self):
+        self.paused = True
+
+    def unpause(self):
+        self.paused = False
+
     def run(self):
 
         while True:
@@ -192,11 +199,17 @@ class AsyncSandschreiber(threading.Thread):
 
             i = 0
             while i < len(self.playlist):
+
                 item = self.playlist[i]
                 item.printing()
 
                 f = open(item.filename, 'r')
                 for line in f.readlines():
+
+                    # enable pause
+                    while self.paused:
+                        time.sleep(1)
+
                     self.write_blocking(line)
 
                 print "Item done"

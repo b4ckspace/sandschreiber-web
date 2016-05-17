@@ -27,7 +27,8 @@ def index():
         files=get_gcodes(settings.gcode_directory),
         playlist=ss.playlist,
         connected=ss.is_connected(),
-        printing=ss.printing
+        printing=ss.printing,
+        sandschreiber=ss
     )
 
 @app.route('/connect', methods=["POST"])
@@ -101,6 +102,10 @@ def control():
         ss.backward()
     elif command == 'home':
         ss.home()
+    elif command == 'pause':
+        ss.pause()
+    elif command == 'play':
+        ss.unpause()
     else:
         return 'Unknown command', 400
 
