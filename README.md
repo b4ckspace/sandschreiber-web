@@ -1,6 +1,6 @@
 # sandschreiber-web
 
-
+![Sandschreiber Web](https://raw.githubusercontent.com/b4ckspace/sandschreiber-web/master/static/img/screenshot.png)
 
 ## Install
 
@@ -15,3 +15,4 @@ pip install -r requirements.txt
 ```
 
 You still need a configured webserver with uswgi. We're using nginx. Details coming soon
+
