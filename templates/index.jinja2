@@ -134,15 +134,13 @@
             <th width="240">Funktion</th>
           </tr>
           {% for file in files | sort %}
-              {% if (file | basename | length) > 8 %}
-                <tr data-letter="{{ file | basename | replace('.gcode', '') }}">
-                  <td class="filename">{{ file | basename }}</td>
-                  <td>
-                    <button type="button" data-filename="{{ file | basename }}" class="btn btn-info btn-add-playlist btn-xs">Zur Playlist hinzufügen</button>
-                    <button type="button" data-filename="{{ file | basename }}" class="btn btn-danger btn-delete-file btn-xs">löschen</button>
-                  </td>
-                </tr>
-              {% endif %}
+            <tr data-letter="{{ file | basename | replace('.gcode', '') }}" class="{% if (file | basename | length) <= 8 %}hidden">
+              <td class="filename">{{ file | basename }}</td>
+              <td>
+                <button type="button" data-filename="{{ file | basename }}" class="btn btn-info btn-add-playlist btn-xs">Zur Playlist hinzufügen</button>
+                <button type="button" data-filename="{{ file | basename }}" class="btn btn-danger btn-delete-file btn-xs">löschen</button>
+              </td>
+            </tr>
           {% endfor %}
         </table>
       </div>
