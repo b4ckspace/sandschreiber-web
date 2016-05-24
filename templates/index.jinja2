@@ -134,7 +134,7 @@
             <th width="240">Funktion</th>
           </tr>
           {% for file in files | sort %}
-            <tr data-letter="{{ file | basename | replace('.gcode', '') }}" class="{% if (file | basename | length) <= 8 %}hidden">
+            <tr data-letter="{{ file | basename | replace('.gcode', '') }}" class="{% if (file | basename | length) <= 8 %}hidden{% endif %}">
               <td class="filename">{{ file | basename }}</td>
               <td>
                 <button type="button" data-filename="{{ file | basename }}" class="btn btn-info btn-add-playlist btn-xs">Zur Playlist hinzufügen</button>
